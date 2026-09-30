@@ -89,7 +89,6 @@ func _ready() -> void:
 	audio = AudioStreamPlayer.new()
 	audio.volume_db = -18
 	add_child(audio)
-	_make_targets()
 
 func cancel_input() -> void:
 	melee_elapsed = -1
@@ -158,7 +157,7 @@ func _process(delta: float) -> void:
 		# Use the aligned sight picture while aiming; restore modeled sights at the hip.
 		for component in armory.weapon.get_children():
 			if component is MeshInstance3D and component.position.y >= 0.06:
-				component.visible = not (aiming and not optical)
+				component.visible = not (aiming and not optical and armory.selected_category != 3)
 		var iron: bool = sight_kind() in ["notch","aperture"] and armory.selected_category != 5
 		if iron and not armory.weapon.has_node("AlignedSights"):
 			preload("res://iron_sights.gd").build(armory.weapon,armory.selected_category,armory.selected_index)
@@ -172,6 +171,8 @@ func _process(delta: float) -> void:
 			pose += Vector3(0, -0.3, 0.08)
 		armory.weapon.position = armory.weapon.position.lerp(pose + Vector3(0, recoil * 0.2, recoil), minf(1, delta * 20))
 		armory.weapon.rotation = Vector3(recoil * 0.7,0,0)
+		if aiming and sight_kind() == "launcher":
+			_clear_launcher_sight()
 		if armory.selected_category == 5:
 			_update_melee_pose()
 	armory.get_parent().get_node("HUD/Crosshair").visible = armory.selected_category < 0 and not armory.is_open
@@ -207,7 +208,7 @@ func _physics_process(delta: float) -> void:
 		rocket.life -= delta
 		if not hit.is_empty() or rocket.life <= 0:
 			var point: Vector3 = hit.position if not hit.is_empty() else finish
-			explode(point, rocket.damage)
+			explode(point, rocket.damage, hit.collider if not hit.is_empty() else null)
 			rocket.node.queue_free()
 			rockets.remove_at(i)
 		else:
@@ -302,7 +303,10 @@ func _hit_target(body: Object, amount: int, hit_position: Vector3 = Vector3.INF)
 	damage_hud.text = "\n".join(damage_messages)
 	damage_hud.add_theme_color_override("font_color", hit_color)
 
-func explode(point: Vector3, damage: int = 150) -> void:
+func explode(point: Vector3, damage: int = 150, direct_hit: Object = null) -> void:
+	# Direct hits always receive full damage, independent of impact height or cover checks.
+	if is_instance_valid(direct_hit):
+		_hit_target(direct_hit,damage)
 	if armory.get_parent().has_node("Vitals"):
 		armory.get_parent().get_node("Vitals").blast_damage(point, damage)
 	var blast := _cube(Vector3.ONE * 0.3, point, Color("ffa04a"))
@@ -311,6 +315,8 @@ func explode(point: Vector3, damage: int = 150) -> void:
 	tween.tween_property(blast, "scale", Vector3.ZERO, 0.22)
 	tween.tween_callback(blast.queue_free)
 	for target in (get_tree().get_nodes_in_group("practice_targets") + get_tree().get_nodes_in_group("enemies")):
+		if target == direct_hit:
+			continue
 		var distance: float = target.global_position.distance_to(point)
 		if distance >= 4:
 			continue
@@ -343,45 +349,9 @@ func _expire(node: Node3D, seconds: float) -> void:
 		if is_instance_valid(effect):
 			effect.queue_free())
 
-func _make_targets() -> void:
-	var number: int = 0
-	for x in [-16.0, -12.0, 12.0, 16.0]:
-		number += 1
-		var body := StaticBody3D.new()
-		body.name = "PracticeTarget"
-		body.set_script(preload("res://target_dummy.gd"))
-		body.target_number = number
-		body.position = Vector3(x,1.8,-8)
-		body.add_to_group("practice_targets")
-		armory.get_parent().add_child(body)
-		var shape := BoxShape3D.new()
-		shape.size = Vector3(1.2,1.5,0.20)
-		var collision := CollisionShape3D.new()
-		collision.shape = shape
-		body.add_child(collision)
-		var plate := _cube(shape.size, body.position, Color("d7664f"))
-		plate.reparent(body, true)
-		plate.name = "Plate"
-		_cube(Vector3(0.65,0.85,0.025), body.position + Vector3(0,0,0.115), Color("eee0b5"))
-		_cube(Vector3(0.22,0.3,0.025), body.position + Vector3(0,0,0.135), Color("913e38"))
-		_cube(Vector3(0.12,1.8,0.12), Vector3(x,0.9,-8.1), Color("555747"))
-
 func _sound(category: int) -> void:
-	var stream := AudioStreamWAV.new()
-	stream.format = AudioStreamWAV.FORMAT_16_BITS
-	stream.mix_rate = 22050
-	var samples: int = 5500 if category in [3,4] else 2200
-	var bytes := PackedByteArray()
-	bytes.resize(samples * 2)
-	for i in range(samples):
-		var t: float = float(i) / 22050
-		var envelope: float = pow(1.0 - float(i) / samples, 3)
-		var value: float = (randf_range(-1,1) * 0.65 + sin(t * 700) * 0.35) * envelope
-		bytes.encode_s16(i * 2, int(value * 24000))
-	stream.data = bytes
-	audio.stream = stream
+	audio.stream = preload("res://gun_audio.gd").shot(category)
 	audio.play()
-
 func ammo_state() -> Dictionary:
 	if armory.selected_category == 5:
 		return {"loaded":0, "reserve":0, "capacity":0}
@@ -615,3 +585,17 @@ func reset_ammo() -> void:
 	if armory.selected_category >= 0:
 		ammo_state()
 	_update_ammo_hud()
+func _clear_launcher_sight() -> void:
+	# Reserve the complete ladder sight rectangle, not just its center ray.
+	# Project each transformed mesh bound so wide tubes and recoil stay below it.
+	var slope: float = 73.0 / maxf(1.0,camera.get_viewport().get_visible_rect().size.y * .5) * tan(deg_to_rad(camera.fov*.5))
+	var lower_by := 0.0
+	for component in armory.weapon.get_children():
+		if not component is MeshInstance3D or not component.visible:
+			continue
+		var bounds: AABB = component.mesh.get_aabb()
+		for corner in range(8):
+			var point: Vector3 = camera.to_local(component.to_global(bounds.get_endpoint(corner)))
+			if point.z < -.02:
+				lower_by = maxf(lower_by,point.y + (-point.z)*slope)
+	armory.weapon.position.y -= lower_by

@@ -78,7 +78,7 @@ const PROFILES := [
 
 static func geometry(category: int, index: int) -> Array:
 	if category == 5:
-		return melee_geometry(index)
+		return preload("res://weapon_silhouettes.gd").refine(melee_geometry(index),category,index,PROFILES[category][index])
 	var p: Array = PROFILES[category][index]
 	var metal := Color(p[1])
 	var furniture := Color(p[2])
@@ -171,7 +171,7 @@ static func geometry(category: int, index: int) -> Array:
 		add(parts, Vector3(0.12, 0.07, 0.09), Vector3(0, 0.025, -length / 2 - barrel), dark)
 	_details(parts, category, index)
 	_finish_details(parts,category,index)
-	return parts
+	return preload("res://weapon_silhouettes.gd").refine(parts,category,index,p)
 
 static func add(parts: Array, size: Vector3, position: Vector3, color: Color) -> void:
 	parts.append([size, position, color])

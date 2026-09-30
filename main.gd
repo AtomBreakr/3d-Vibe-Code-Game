@@ -27,6 +27,18 @@ func _ready() -> void:
 	add_child(scoreboard)
 	build_root = self
 	_setup_controls()
+	if get_node("/root/GameSettings").selected_level != 0:
+		preload("res://extra_maps.gd").new().build(self,get_node("/root/GameSettings").selected_level)
+		var map_enemies := Node.new()
+		map_enemies.name = "Enemies"
+		map_enemies.set_script(preload("res://enemy_manager.gd"))
+		add_child(map_enemies)
+		$HUD/Instructions.hide()
+		var map_rounds := CanvasLayer.new()
+		map_rounds.name = "Rounds"
+		map_rounds.set_script(preload("res://rounds.gd"))
+		add_child(map_rounds)
+		return
 	box("Terrain", Vector3(78, 1, 76), Vector3(0, -0.55, 0), "c7aa70")
 	box("Grass", Vector3(62, 0.15, 66), Vector3(0, -0.05, 0), "72af48")
 	box("Street", Vector3(60, 0.12, 12), Vector3(0, 0.04, 0), "42495b")

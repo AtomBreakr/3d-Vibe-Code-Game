@@ -53,6 +53,8 @@ func record_death(victim: int, attacker: int) -> void:
 	stats[victim].deaths += 1
 	if get_node("/root/GameSettings").hostile(attacker,victim) and stats.has(attacker):
 		stats[attacker].kills += 1
+		if attacker == 0:
+			get_parent().get_node("Vendors").award_kill()
 		if get_node("/root/GameSettings").mode() == 1:
 			get_parent().get_node("Enemies").call_deferred("promote",attacker)
 	_refresh()

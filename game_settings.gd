@@ -1,7 +1,10 @@
 extends Node
+
+var selected_level: int = 0
+const LEVEL_NAMES = ["Blocktown", "Voxel Valley", "Skyline District"]
 const DEFAULTS := {"move_forward":KEY_W,"move_back":KEY_S,"move_left":KEY_A,"move_right":KEY_D,"jump":KEY_SPACE,"sprint":KEY_SHIFT,"crouch":KEY_CTRL,"reload":KEY_R,"armory":KEY_B,"interact":KEY_E,"explosive":KEY_G,"primary":KEY_1,"secondary":KEY_2,"scoreboard":KEY_TAB}
 var keys: Dictionary = DEFAULTS.duplicate()
-var match_rules := {"money":1500,"bots":4,"minutes":5,"kills":10,"mode":0,"team_size":3}
+var match_rules := {"money":1500,"bots":4,"minutes":5,"kills":10,"mode":0,"team_size":3,"explosive_limit":2}
 var volume := 0.8
 var sensitivity := 1.0
 var fullscreen := false

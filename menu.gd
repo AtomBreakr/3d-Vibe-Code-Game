@@ -7,6 +7,7 @@ var waiting: String = ""
 var bind_button: Button
 var page := "home"
 var margin: MarginContainer
+var artwork: TextureRect
 var backdrop: Texture2D
 var scroll: ScrollContainer
 
@@ -19,7 +20,7 @@ func _ready() -> void:
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	# A clean render of the actual map keeps the menu in the game's visual style.
 	backdrop = preload("res://menu_backdrop.png")
-	var artwork := TextureRect.new()
+	artwork = TextureRect.new()
 	background.add_child(artwork)
 	artwork.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	artwork.texture = backdrop
@@ -69,6 +70,7 @@ func _ready() -> void:
 	home()
 
 func clear(title: String) -> void:
+	update_backdrop()
 	waiting = ""
 	scroll.scroll_vertical = 0
 	for child in column.get_children():
@@ -135,18 +137,12 @@ func home() -> void:
 func levels() -> void:
 	page = "levels"
 	clear("SELECT LEVEL")
-	var preview := TextureRect.new()
-	preview.texture = backdrop
-	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	preview.custom_minimum_size.y = 180
-	column.add_child(preview)
-	text("01 / BLOCKTOWN")
-	text("THE NEIGHBORHOOD")
-	button("Select Blocktown",match_rules)
-	
+	var descriptions = ["Suburban houses and backyard firefights.","Grass blocks, oak trees and a timber village.","Tall apartments, city streets and a clock tower."]
+	for i in range(3):
+		var level_id: int = i
+		button("%02d   %s" % [i+1,settings.LEVEL_NAMES[i]],func(): settings.selected_level=level_id; match_rules())
+		text(descriptions[i])
 	button("Back",home)
-
 func options() -> void:
 	page = "options"
 	clear("SETTINGS")
@@ -241,8 +237,10 @@ func return_to_menu() -> void:
 func match_rules() -> void:
 	page = "rules"
 	clear("MATCH RULES")
-	text("BLOCKTOWN / CUSTOM MATCH")
+	text(settings.LEVEL_NAMES[settings.selected_level].to_upper() + " / CUSTOM MATCH")
 	rule_control("Starting credits","money",0,10000,100)
+	rule_control("Maximum explosives carried","explosive_limit",0,20,1)
+	text("Earn $100 per kill. Explosive limit is shared across all types; 0 disables purchases.")
 	var mode_select := OptionButton.new()
 	for mode_name in settings.MODE_NAMES:
 		mode_select.add_item(mode_name)
@@ -259,11 +257,11 @@ func match_rules() -> void:
 		text("Gun Game: 10 kills to win. Each kill upgrades your weapon.")
 	else:
 		rule_control("Team kills to win" if settings.mode() == 2 else "Kills to win","kills",1,100,1)
-	text("Gun Game begins after a 5-second countdown." if settings.mode() == 1 else "Each round begins with 30 seconds to choose your loadout.\nStarting credits apply when you enter the level.")
+	text("Gun Game begins after a 5-second countdown." if settings.mode() == 1 else "Each round begins with 15 seconds to choose your loadout.\nStarting credits apply when you enter the level.")
 	button("START MATCH",func():
 		get_tree().paused = false
 		get_tree().change_scene_to_file("res://main.tscn"))
-	button("Reset rules",func(): settings.match_rules={"money":1500,"bots":4,"minutes":5,"kills":10,"mode":0,"team_size":3}; match_rules())
+	button("Reset rules",func(): settings.match_rules={"money":1500,"bots":4,"minutes":5,"kills":10,"mode":0,"team_size":3,"explosive_limit":2}; match_rules())
 	button("Back to levels",levels)
 
 func rule_control(title: String, key: String, minimum: int, maximum: int, increment: int) -> void:
@@ -282,3 +280,8 @@ func rule_control(title: String, key: String, minimum: int, maximum: int, increm
 	input.custom_minimum_size = Vector2(140,42)
 	input.value_changed.connect(func(value): settings.match_rules[key]=int(value))
 	row.add_child(input)
+func update_backdrop() -> void:
+	var path = "res://menu_backdrop.png" if settings.selected_level == 0 else "res://map_background_%d.png" % settings.selected_level
+	if ResourceLoader.exists(path):
+		backdrop = load(path)
+		artwork.texture = backdrop

@@ -31,7 +31,7 @@ func _ready() -> void:
 
 func prepare() -> void:
 	phase = "prepare"
-	remaining = 5 if get_node("/root/GameSettings").mode() == 1 else 30
+	remaining = 5 if get_node("/root/GameSettings").mode() == 1 else 15
 	round_number += 1
 	get_parent().set_meta("round_active",false)
 	var scene = get_parent()

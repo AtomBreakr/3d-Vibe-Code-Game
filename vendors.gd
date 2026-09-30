@@ -2,7 +2,7 @@ extends CanvasLayer
 
 const ITEMS := ["Grenade", "C4", "Landmine"]
 const PRICES := [100, 200, 150]
-const LIMIT := 2
+var carry_limit: int = 2
 var credits: int = 1500
 var inventory: Array[int] = [0, 0, 0]
 var vendors: Array[StaticBody3D] = []
@@ -20,6 +20,7 @@ var buttons: Array[Button] = []
 
 func _ready() -> void:
 	credits = clampi(get_node("/root/GameSettings").match_rules.money,0,10000)
+	carry_limit = clampi(int(get_node("/root/GameSettings").match_rules.get("explosive_limit",2)),0,20)
 	layer = 20
 	player = get_parent().get_node("Player")
 	armory = get_parent().get_node("Armory")
@@ -100,11 +101,10 @@ func _make_vendor(vendor_name: String, point: Vector3, color: Color) -> void:
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	body.add_child(label)
 
-func _part(body: Node3D, dimensions: Vector3, point: Vector3, color: Color) -> void:
+func _part(body: Node3D, dimensions: Vector3, point: Vector3, color: Color, kind: String = "box", angles: Vector3 = Vector3.ZERO) -> void:
 	var mesh := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = dimensions
-	mesh.mesh = box
+	mesh.mesh = preload("res://weapon_mesh.gd").mesh(dimensions,kind)
+	mesh.rotation = angles
 	mesh.position = point
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
@@ -149,7 +149,7 @@ func open_shop(vendor: StaticBody3D) -> void:
 	is_open = true
 	title.text = str(vendor.name) + " / Supply shop"
 	dialogue.text = '"Need supplies? Take a look. What can I get you?"\nStarter credits and purchases last for this play session.'
-	status.text = "Choose an item to buy. Carry limit: 2 explosives total."
+	status.text = "Choose an item to buy. Carry limit: %d explosives total." % carry_limit
 	player.set_meta("shopping",true)
 	player.controls_active = false
 	player.set_physics_process(false)
@@ -170,7 +170,7 @@ func close_shop() -> void:
 func buy(index: int) -> void:
 	if not is_open or index < 0 or index >= ITEMS.size():
 		return
-	if credits < PRICES[index] or carried_count() >= LIMIT:
+	if credits < PRICES[index] or carried_count() >= carry_limit:
 		return
 	credits -= PRICES[index]
 	inventory[index] += 1
@@ -180,11 +180,15 @@ func buy(index: int) -> void:
 func _refresh() -> void:
 	wallet.text = "Credits: %d\nGrenades: %d   C4: %d   Landmines: %d" % [credits,inventory[0],inventory[1],inventory[2]]
 	for i in range(buttons.size()):
-		buttons[i].text = "%s  /  %d credits  /  Owned %d / Total limit %d" % [ITEMS[i],PRICES[i],inventory[i],LIMIT]
-		buttons[i].disabled = credits < PRICES[i] or carried_count() >= LIMIT
+		buttons[i].text = "%s  /  %d credits  /  Owned %d / Total limit %d" % [ITEMS[i],PRICES[i],inventory[i],carry_limit]
+		buttons[i].disabled = credits < PRICES[i] or carried_count() >= carry_limit
 	if is_open:
 		title.text = title.text.split(" / ")[0] + " / Supply shop / %d credits" % credits
 
 
 func carried_count() -> int:
 	return inventory[0] + inventory[1] + inventory[2]
+
+func award_kill() -> void:
+	credits += 100
+	_refresh()

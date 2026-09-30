@@ -21,6 +21,7 @@ var visual: Node3D
 var label: Label3D
 var collider: CollisionShape3D
 var shots := 0
+var shot_audio: AudioStreamPlayer3D
 var gun: Node3D
 var using_sidearm := false
 var legs: Array[Node3D] = []
@@ -29,6 +30,14 @@ var walk_phase := 0.0
 
 func _ready() -> void:
 	add_to_group("enemies")
+	shot_audio = AudioStreamPlayer3D.new()
+	shot_audio.name = "GunshotAudio"
+	shot_audio.position = Vector3(0,.5,0)
+	shot_audio.volume_db = -15
+	shot_audio.unit_size = 8.0
+	shot_audio.max_distance = 80.0
+	shot_audio.max_polyphony = 3
+	add_child(shot_audio)
 	floor_snap_length = 0.45
 	collider = CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
@@ -86,7 +95,7 @@ func reset_bot() -> void:
 	gun.position = Vector3(0.22,0.12,-0.4)
 	gun.scale = Vector3.ONE*0.7
 	for part in Catalog.geometry(category,weapon_index):
-		shop._part(gun,part[0],part[1],part[2])
+		shop._part(gun,part[0],part[1],part[2],part[3],part[4])
 	label = Label3D.new()
 	visual.add_child(label)
 	label.position.y = 1.25
@@ -120,7 +129,7 @@ func _physics_process(delta: float) -> void:
 			part.queue_free()
 		var shop = manager.get_parent().get_node("Vendors")
 		for part in Catalog.geometry(1 if using_sidearm else category,secondary_index if using_sidearm else weapon_index):
-			shop._part(gun,part[0],part[1],part[2])
+			shop._part(gun,part[0],part[1],part[2],part[3],part[4])
 	var sees: bool = distance < 28 and can_see_player()
 	repath -= delta
 	if repath <= 0:
@@ -177,6 +186,8 @@ func shoot() -> void:
 		return
 	loaded -= 1
 	shots += 1
+	shot_audio.stream = preload("res://gun_audio.gd").shot(1 if using_sidearm else category)
+	shot_audio.play()
 	shot_time = randf_range(1.3,1.9) if category == 4 else randf_range(0.38,0.65)
 	var origin := global_position+Vector3.UP*0.5
 	var aim: Vector3 = target.global_position + Vector3.UP*0.15
@@ -238,5 +249,5 @@ func refresh_gun() -> void:
 		part.queue_free()
 	var shop = manager.get_parent().get_node("Vendors")
 	for part in Catalog.geometry(category,weapon_index):
-		shop._part(gun,part[0],part[1],part[2])
+		shop._part(gun,part[0],part[1],part[2],part[3],part[4])
 	label.text = "RAIDER %d / %s" % [target_number-100,Catalog.PROFILES[category][weapon_index][0]]

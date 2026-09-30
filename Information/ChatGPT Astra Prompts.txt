@@ -1,0 +1,85 @@
+ChatGPT Astra Prompts
+
+1.	Help me build a 3D game in this Godot project using GDScript. I’m a beginner, so edit the project files directly and explain any steps I need to do in Godot. Start with a small playable scene: a floor, lighting, and a player with WASD movement, mouse look, and jumping. Use simple shapes for now. Set the main scene so I can press Play to test it. Check for errors before finishing.
+
+2.	awesome, now can you make the map look like "nuketown" from black ops 2 but in the graphical style of "pixel gun 3d"
+
+3.	Now can you add in a screen such that when the user pressed "b" on the keyboard it will pop up. This screen should have a list of tabs on the side that the user can cycle through by clicking on them labelled "Assault Rifles", "Pistols", "Machine Guns", "Rocket Launchers", and "Sniper Rifles". When each tab is clicked, the "main area" of the screen should show 10 different "weapons" of the tab-specified type. If the user clicks on one of these "weapons" their character should then be able to hold it on the map.
+
+4.	Can you make each weapon modeled and named after real life weapons of their type? Like for assault rifles have an "ak-47" and a "m2" and for the pistols have a "dessert eagle" and "1911" those types of things. Also i noticed that there is a way to get over the fence, so can you make it to where that isnt possible.
+
+5.	I noticed they are modelled different on the selection screen, but when selected and going back to the character, they all still look the same, can you fix that. Also is it possible to add in shooting when using left click and when right clicked it scopes in based off of how the actual gun it is modelled after would look scoped in?
+
+6.	now can you add in an ammo system where the ammo count is shown in the bottom right corner of the screen, the magazine size is based on the sizes of their respective "real-world" counterparts and r can be pressed to reload the weapns?
+
+7.	Now can you make the models a little more detailed
+
+8.	Can you add in recoil types to each gun and make them less accurate when not scoped in. The recoil patterns and accuracy should be set to those similar of the specific gun types in most modern day games
+
+9.	Now can there be damage, also based on the weapon type, where when specific targets are hit, the amount of damage done by the weapon is shown by the hit marker. Assume player health would be 150 (100 health and 50 shield) for the damage done by the weapons.
+
+10.	Can you add in something to where the weapon select tab will allow you to select a "primary" and a "secondary" weapon that can be switched when playing using either the number keys or the scroll wheel. Also can you refine the scopes to look better and more accurate to their irl counterparts
+
+11.	Ok so im noticing an issue where when some guns are scoped in and fired, they bullets seem to come out from the side of the gun and not the barrel. Also the scopes are still not accurate to their real world counterparts. Lastly, when choosing between the primary and secondary slot, there should be different tabs, so like the primary tabs should be the assault rifles and, snipers, and machine guns, while the secondary should be pistols, rocket launchers, and melee
+
+12.	Can you make the melee action look a little better? The weapons are all sideways and the action itself doesnt look very good. Also the scopes look good for the most part, but some of the iron sights could still use some work.
+
+13.	Ok so I noticed how some small lips, like the one from the grass to the sidewalk, cannot just be walked over and need to be jumped to keep moving. Also the iron sights look a lot better to what I was wanting, but the gun move seperately from them and there is only a really small spot to see through them
+
+14.	The gun still takes up too much of the screen when using those with iron sights, and the step up issue is still a problem at the top of the stairs in the houses. Also, can you make the make look more like nuketown
+
+15.	Ok so now the iron sights are disproportional to the weapon itself, is there a middle ground that can be found? Also can you add in a few npcs around the map that do not move, but when the player goes up to them and presses e, they can talk to them to "buy" some explosives like grenades, c4s, or landmines
+
+16.	Can you move the npcs to the second story of each house, so one in each house. And then make it to where "g" will bring up the explosive you bought, pressing g again will detonate a c4 if placed using left click. Also i want the user to only be able to carry 2 explosives at one time.
+
+17.	Can you make the map a bit bigger, then make it to where the user can be caught up in their own explosions and take damage. There should be a healthbar in the top middle of the screen.
+
+18.	Ok so now can you make the spot where it numerically shows the health and shield show it within their respective bars instead of above them? Also when the player respawns after death their guns and reserves should be set back to reloaded and full. I also want the guns to start auto-reloading when they are out of ammo.
+
+19.	Cool, now can you add in some other npcs, that are given a random loadout and roam the map trying to attack the user? They shouldnt be terribly accurate but still be able to kill the user. Also can you add in using "shift" to sprint and "ctrl" to crouch?
+
+20.	Perfect. Now when the user shifts while crouched it should automatically un-crouch them instead of having to jump then shift. Also headshots should do more damage than body shots. Also can you make it to where the npcs actually look like they are walking around instead of just hovering?
+
+21.	Now can you add in a kill tracker that when the user presses "tab" a screen will show up that will show the kills, the deaths, and the K/D ratio that the user and each npc has. Secondly can you remove the things on the top left of the screen that show the controls
+
+22.	Now can you take out the 2 vendors from the list. Also there is an issue that when the bullets are fired at the npcs or player, they just kinda float in the air after they die or move. Lastly can you make it to where if someone (including the npcs) doesnt take damage for 5 seconds, the health and shield begin to regenerate at a set speed.
+
+23.	Now can you make all the models of everything more detailed
+
+24.	Now can you add in a main menu, where there are settings the user can change (like sound graphics, and keybinds), close the game, or go into a level select screen
+
+25.	Can you adjust the main menu to look more like modern day games menus, but with the same style as the actual game itself. Also there doesnt need to be text saying there are vendors or the health for the map select menu
+
+26.	Awesome, now can you make it to where there are rounds during the game. Each round should last for 5 minutes or until someone gets 10 kills. Before each round there should be about 30 seconds to choose the loadout they want to go with. Also the iron sights for some of the guns still need a little bit of work. And can you remove the "Blocktown" sign from the map
+
+27.	Ok so i noticed its possible to press b and then move around during the "loadout phase", during this phase the player should be locked in place and only able to look around. Also can you make it to where there are random spawn points for the player and the npcs during the original load in and after each death, there should be multiple specified spawn points that are then picked randomly when the player spawns/ respawns. Lastly, the iron sights problem is still not fixed. They are disproportionate to the weapon and some just dont make sense the way they are attached to the gun when aiming down sights. They should be proportionate and like the real world counterpart, but the gun shouldnt be in the middle of the screen, the sights should
+
+28.	Now can you make a screen after they select the level, but before the match actually starts, where the user can change the "match rules", like have more starting/less money, more/less bots (between 0 and 5), the match length, and the kill limit for the matches?
+
+29.	Cool now can we do gamemodes? Like free-for-all, where the selected number of bots all try and kill each other and the user, gun-game, where it is free-for-all, but the user and bots start with a low damage weapon and then everytime they get a kill they change weapons to something better (going up to 10 kills to win), and team-deathmatch, where the user can select the team sizes instead of the number of bots and fight with some bots against an even number of bots on the "enemy" team. All of these should also track with the "tab" menu.
+
+30.	Ok now can you make the gun game use less pistols? Almost everything in it was a pistol and there needs to be more variety. Also i noticed that the scope for the aug doesnt have a dot in the middle of it, and the iron sight for the deagle is covered by the gun model, so can you go and check through them one more time. Lastly, during gun game there should only be a 5 second timer until the match starts since they dont have to choose their weapons.
+
+31.	Now can there be a "win" screen in between the matches that shows the stats of the player and bots. Also can you check to make sure the bots can actually kill each other, can im not sure if they can.
+
+32.	can you make it more detailed again, they should look like their real world counterpart with a blocky/pixelated twist but right now they look like blocks/pixels with a real world twist
+
+33.	ok yeah that looks a lot better, now can you add in a 2 more maps? One modeled after minecraft and one after tilted towers
+
+34.	oh can you add an option in the gamemode settings where they can change the max number of explosives held? And then also give $100 for every kill
+
+35.	can you make the maps look more like the things they are supposed to, i want them to be noticeable at a glance, but still with the style of the others, also the background in the options menu should change based on which map is chosen
+
+36.	Awesome now can you make the loadout time 15 seconds and not 30 and then make it to where they cant turn around during the win screen
+
+37.	can you remove the targets too
+
+38.	can you make sprint toggleable and when sprinting then using crouch, they slide?
+
+39.	Some of the rocket launchers scopes are half covered by the gun, can you go and fix that?
+
+40.	well i didnt want them to hide, just not cover the scope
+
+41.	also all of the rocket launchers should be able to 1 shot anyone
+
+42. can you add in sounds for the enemy fire too?

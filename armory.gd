@@ -1,4 +1,5 @@
 extends CanvasLayer
+static var weapon_icons: Dictionary = {}
 
 const CATEGORIES := ["Assault Rifles", "Pistols", "Machine Guns", "Rocket Launchers", "Sniper Rifles", "Melee"]
 const Catalog = preload("res://weapon_catalog.gd")
@@ -191,6 +192,9 @@ func _show_category(category: int) -> void:
 		grid.add_child(button)
 
 func make_icon(category: int, index: int) -> ImageTexture:
+	var icon_key := Vector2i(category,index)
+	if weapon_icons.has(icon_key):
+		return weapon_icons[icon_key]
 	var shapes: Array = Catalog.geometry(category, index)
 	var min_z: float = 100
 	var max_z: float = -100
@@ -201,14 +205,24 @@ func make_icon(category: int, index: int) -> ImageTexture:
 	var img := Image.create(88, 48, false, Image.FORMAT_RGBA8)
 	img.fill(Color.TRANSPARENT)
 	for shape in shapes:
-		var size: Vector3 = shape[0]
-		var location: Vector3 = shape[1]
-		var x: int = int(6 + (max_z - location.z - size.z / 2) * scale_factor)
-		var y: int = int(23 - (location.y + size.y / 2) * scale_factor)
-		var rect := Rect2i(x, y, maxi(1, int(size.z * scale_factor)), maxi(1, int(size.y * scale_factor)))
-		rect = rect.intersection(Rect2i(0, 0, 88, 48))
-		img.fill_rect(rect, shape[2].lightened(0.18))
-	return ImageTexture.create_from_image(img)
+		var mesh: Mesh = preload("res://weapon_mesh.gd").mesh(shape[0],shape[3])
+		var vertices: PackedVector3Array = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+		var points := PackedVector2Array()
+		var rotation := Basis.from_euler(shape[4])
+		for vertex in vertices:
+			var point: Vector3 = rotation*vertex+shape[1]
+			points.append(Vector2(6+(max_z-point.z)*scale_factor,23-point.y*scale_factor))
+		var hull := Geometry2D.convex_hull(points)
+		var bounds := Rect2(hull[0],Vector2.ZERO)
+		for point in hull:
+			bounds = bounds.expand(point)
+		for y in range(maxi(0,floori(bounds.position.y)),mini(48,ceili(bounds.end.y))):
+			for x in range(maxi(0,floori(bounds.position.x)),mini(88,ceili(bounds.end.x))):
+				if Geometry2D.is_point_in_polygon(Vector2(x+0.5,y+0.5),hull):
+					img.set_pixel(x,y,shape[2].lightened(0.18))
+	var texture := ImageTexture.create_from_image(img)
+	weapon_icons[icon_key] = texture
+	return texture
 func equip(category: int, index: int) -> void:
 	selected_category = category
 	selected_index = index
@@ -221,7 +235,7 @@ func equip(category: int, index: int) -> void:
 	weapon.position = Vector3(0.27, -0.23, -0.68)
 	weapon.scale = Vector3.ONE * (0.65 if category in [2, 3, 4] else 0.85)
 	for shape in Catalog.geometry(category, index):
-		part(shape[0], shape[1], shape[2])
+		part(shape[0], shape[1], shape[2],shape[3],shape[4])
 	if category == 5:
 		part(Vector3(0.105,0.10,0.13),Vector3(0,-0.035,0.10),Color("dca976"))
 		for finger in range(3):
@@ -240,15 +254,14 @@ func equip(category: int, index: int) -> void:
 	status.text = "EQUIPPED: " + Catalog.PROFILES[category][index][0].to_upper() + "    /    " + CATEGORIES[category]
 	set_open(false)
 
-func part(size: Vector3, location: Vector3, color: Color) -> void:
+func part(size: Vector3, location: Vector3, color: Color, kind: String = "box", angles: Vector3 = Vector3.ZERO) -> void:
 	var mesh := MeshInstance3D.new()
-	var shape := BoxMesh.new()
-	shape.size = size
-	mesh.mesh = shape
+	mesh.mesh = preload("res://weapon_mesh.gd").mesh(size,kind)
+	mesh.rotation = angles
 	mesh.position = location
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.roughness = 0.68
 	mesh.material_override = material
 	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	weapon.add_child(mesh)

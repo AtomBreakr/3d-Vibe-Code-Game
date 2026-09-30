@@ -114,6 +114,7 @@ func _process(delta: float) -> void:
 		_refresh()
 
 func respawn(randomize_position: bool = true) -> void:
+	player.reset_movement()
 	regeneration.reset()
 	get_parent().get_node("Armory/Combat").reset_ammo()
 	health = MAX_HEALTH
